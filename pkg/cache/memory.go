@@ -26,25 +26,26 @@ func NewMemory() *Memory {
 
 // Set stores a value in the cache with a given TTL
 // (time to live) in seconds.
-func (sc *Memory) Set(key string, value string, durationInMinutes int) {
+func (sc *Memory) Set(key string, value string, durationInMinutes int) error {
 	expiration := time.Now().Add(time.Duration(durationInMinutes)).UnixNano()
 	sc.syncMap.Store(key, CacheEntry{value: value, expiration: expiration})
+	return nil
 }
 
 // Get retrieves a value from the cache. If the value is not found
 // or has expired, it returns false.
-func (sc *Memory) Get(key string) (string, bool) {
+func (sc *Memory) Get(key string) (string, error) {
 	entry, found := sc.syncMap.Load(key)
 	if !found {
-		return "", false
+		return "", nil
 	}
 	// Type assertion to CacheEntry, as entry is an interface{}
 	cacheEntry := entry.(CacheEntry)
 	if time.Now().UnixNano() > cacheEntry.expiration {
 		sc.syncMap.Delete(key)
-		return "", false
+		return "", nil
 	}
-	return cacheEntry.value, true
+	return cacheEntry.value, nil
 }
 
 // Delete removes a value from the cache.
@@ -65,4 +66,9 @@ func (sc *Memory) CleanUp() {
 			return true
 		})
 	}
+}
+
+// Ping checks if the cache is available.
+func (sc *Memory) Ping() error {
+	return nil
 }
