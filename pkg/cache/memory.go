@@ -48,8 +48,9 @@ func (sc *Memory) Get(key string) (string, bool) {
 }
 
 // Delete removes a value from the cache.
-func (sc *Memory) Delete(key string) {
+func (sc *Memory) Del(key string) error {
 	sc.syncMap.Delete(key)
+	return nil
 }
 
 // CleanUp periodically removes expired entries from the cache.
